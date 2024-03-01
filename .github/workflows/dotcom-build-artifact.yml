@@ -1,0 +1,55 @@
+name: Publish Website
+
+on:
+  push:
+    branches:
+      - trunk
+  workflow_dispatch:
+jobs:
+  Build-Artifact-Action:
+    name: Build-Artifact-Action
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Install PHP dependencies for production
+      uses: php-actions/composer@v6
+      with:
+        php_version: 8.1
+        args: '--optimize-autoloader --no-dev --profile --ignore-platform-reqs --no-interaction --no-progress --prefer-dist'
+
+    - name: Setup node 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Run yarn install
+      uses: borales/actions-yarn@v4
+      with:
+        cmd: install
+
+    - name: Run yarn grunt
+      uses: borales/actions-yarn@v4
+      with:
+        cmd: grunt
+
+    - name: Upload the artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: wpcom
+        path: |
+          .
+          !.DS_Store
+          !.git 
+          !.gitattributes 
+          !.github 
+          !.gitignore 
+          !.editorconfig.json 
+          !README.md 
+          !composer.lock 
+          !package-lock.json 
+          !package.json 
+          !travis.yml 
+          !phpcs.xml.dist 
+          !node_modules 
+          !yarn.lock
